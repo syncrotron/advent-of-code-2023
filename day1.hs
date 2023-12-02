@@ -5,17 +5,16 @@ import System.IO
 import Text.Read (readMaybe)
 
 -- Start Part 1 --
-
+{-
 main = do
     args <- getArgs
-    handle <- openFile (head args) ReadMode 
-    contents <- hGetContents handle 
+    handle <- openFile (head args) ReadMode -- Neet way to open filenames passed in as args
+    contents <- hGetContents handle -- Lazy; will only read file when needed. Can sut to buffer size with: hSetBuffering handle $ BlockBuffering (Just 2048)  
     let filelines = words contents
-    let ns = [("one",1::Int), ("two", 2), ("three", 3), ("four", 4), ("five", 5), ("six", 6), ("seven", 7), ("eight", 8), ("nine", 9)]
-    let test = "slconeightfoureight557m38"
-    --print (wordsToDigit ns test)
-    print (sum (map (gen2DigitNum . wordsToDigit ns) filelines))
-    hClose handle
+    print (sum (map (gen2DigitNum . condenseInts) filelines))
+    -- mapM_ print filelines
+    hClose handle -- Remember to close files when done
+-}
 
 condenseInts :: String -> [Int]
 condenseInts xs = case xs of [] -> [] 
@@ -32,6 +31,19 @@ gen2DigitNum xs = case xs of [] -> 0
 -- End Part 1 --
 
 -- Start Part 2 --
+
+main = do
+    args <- getArgs
+    handle <- openFile (head args) ReadMode 
+    contents <- hGetContents handle 
+    let filelines = words contents
+    let ns = [("one",1::Int), ("two", 2), ("three", 3), ("four", 4), ("five", 5), ("six", 6), ("seven", 7), ("eight", 8), ("nine", 9)]
+    let test = "slconeightfoureight557m38"
+    --print (wordsToDigit ns test)
+    print (sum (map (gen2DigitNum . wordsToDigit ns) filelines))
+    hClose handle
+
+
 wordsToDigit :: [(String, Int)] -> String -> [Int]
 wordsToDigit ns xs = case xs of [] -> []
                                 [x] -> case readMaybe [x] :: Maybe Int of Nothing -> []
