@@ -56,5 +56,4 @@ evalGamePower rgb rgbAcc xs = case (xs, rgbAcc) of
         "blue" -> evalGamePower 0 ( r, g, max b rgb) xs'
         _ -> evalGamePower (read x) (r , g, b) xs' 
 
-
 -- end Part 2 --
