@@ -119,6 +119,7 @@ linesToTriples2 lines = case lines of
 --         l ->  findPartNumsHelper2 "" l ++ findPartNums2 ls
 
 -- findPartNumsHelper2 :: String -> [(Char, Char, Char)] -> [(Char, Char, Char)] -> [(String, String)]
+-- --should call travelThroughGears somewhere in here
 -- findPartNumsHelper2 strAcc line = case line of
 --     [] -> []
 --     (y, z, z'):ls -> if (isGear y || isGear z || isGear z') && strAcc == ""
@@ -132,12 +133,17 @@ linesToTriples2 lines = case lines of
 isGear :: Char -> Bool
 isGear x = x == '*'
 
+-- The idea is to position the gear in the y position of (y, z, z'), then search for numbers recursively
+-- in all directions. That is why I pass in origCol and do all the funky index stuff, as I am trying to
+-- Allow crawls through the original matrix in all directions (except above y, as we assume we read all numbers top left down)
 travelThroughGear :: String -> [(Char, Char, Char)] -> [(Char, Char, Char)] -> String
 travelThroughGear strAcc origCol curCol = case curCol of
     [] -> []
+    -- All "isGear" if statements are trying to get a gear in the y position before searching for numbers
     (y, z, z'):ls -> if isGear y 
+        -- Try to recursivley look for number
         then travelThroughGear strAcc origCol (drop (length origCol - length ls - 1) origCol) 
-        ++ travelThroughGear strAcc origCol (drop (length origCol - length ls +1) origCol)
+        ++ travelThroughGear strAcc origCol (drop (length origCol - length ls + 1) origCol)
         else if isGear z then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls)) origCol))
         else if isGear z' then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls) + 1) origCol)) 
         else []
