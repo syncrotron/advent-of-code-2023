@@ -9,6 +9,7 @@ import Data.Char
 import Data.ByteString.Char8 (splitWith)
 
 -- Start Part 1 --
+{-
 main = do
     args <- getArgs
     handle <- openFile (head args) ReadMode -- Neet way to open filenames passed in as args
@@ -17,6 +18,8 @@ main = do
     let listOfParts = map (groupBy groupHelper) (findPartNums (linesToTriples "" fileLines))
     print (sum (map (read :: String -> Int) (concatMap ( filter filterHelper) (filter containsSys listOfParts))))
     hClose handle -- Remember to close files when done
+-}
+
 
 zipTriple :: (String, String, String) -> [(Char, Char, Char)]
 zipTriple trip = case trip of 
@@ -40,7 +43,7 @@ findPartNums tripLines = case tripLines of
     l:ls -> case l of
         [] -> []
         l ->  findPartNumsHelper "" l ++ findPartNums ls
-        
+
 findPartNumsHelper :: String -> [(Char, Char, Char)] -> [String]
 findPartNumsHelper strAcc line = case line of
     [] -> []
@@ -87,5 +90,56 @@ getSym (x, y, z)
 -- End Part 1 --
 
 -- Start Part 2 --
+
+main = do
+    args <- getArgs
+    handle <- openFile (head args) ReadMode -- Neet way to open filenames passed in as args
+    contents <- hGetContents handle 
+    let test1 = "......755."
+    let test2 = "...$.*...."
+    let test3 = ".664.598.."
+    let fileLines = lines contents
+    let listOfParts = linesToTriples2 fileLines
+    print (listOfParts)
+    hClose handle -- Remember to close files when done
+
+-- Verified
+linesToTriples2 :: [String] -> [[(Char, Char, Char)]]
+linesToTriples2 lines = case lines of 
+    [] -> []
+    [y] -> zipTriple (y, replicate (length y) '.', replicate (length y) '.') : linesToTriples2 [] -- Handles bottom row of string
+    (y:z:z':ys) -> zipTriple (y, z, z') : linesToTriples2 (z':ys)
+    (y:z:ys) -> zipTriple (y, z, replicate (length y) '.') : linesToTriples2 (z:ys) -- Handles second bottom row of string
+
+-- findPartNums2 :: [[(Char, Char, Char)]] -> [(String, String)]
+-- findPartNums2 tripLines = case tripLines of
+--     [] -> []
+--     l:ls -> case l of
+--         [] -> []
+--         l ->  findPartNumsHelper2 "" l ++ findPartNums2 ls
+
+-- findPartNumsHelper2 :: String -> [(Char, Char, Char)] -> [(Char, Char, Char)] -> [(String, String)]
+-- findPartNumsHelper2 strAcc line = case line of
+--     [] -> []
+--     (y, z, z'):ls -> if (isGear y || isGear z || isGear z') && strAcc == ""
+--     then (findPartNumsHelper2 (strAcc ++ stringIfNum y) ls, ) 
+--     else if isNumber y then
+--         findPartNumsHelper2 (getSym ('.', y, z) ++ strAcc ++ [y]) ls
+--     else if isSym y || isSym z then
+--         (getSym ('.', y, z) ++ strAcc, "") : findPartNumsHelper2 (getSym ('.', y, z)) ls
+--     else strAcc : findPartNumsHelper "" ls
+
+isGear :: Char -> Bool
+isGear x = x == '*'
+
+travelThroughGear :: String -> [(Char, Char, Char)] -> [(Char, Char, Char)] -> String
+travelThroughGear strAcc origCol curCol = case curCol of
+    [] -> []
+    (y, z, z'):ls -> if isGear y 
+        then travelThroughGear strAcc origCol (drop (length origCol - length ls - 1) origCol) 
+        ++ travelThroughGear strAcc origCol (drop (length origCol - length ls +1) origCol)
+        else if isGear z then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls)) origCol))
+        else if isGear z' then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls) + 1) origCol)) 
+        else []
 
 -- End Part 2 --
