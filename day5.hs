@@ -16,9 +16,10 @@ main = do
     contents <- hGetContents handle
     let fileLines = lines contents
     let seeds = getSeeds (head fileLines)
-    let maps = tail (orgMapping [] (extractMapping [] (tail fileLines)))
-    print (calcMap seeds (maps !! 0))
-    -- print 
+    let maps = (extractMapping [] (tail fileLines))
+    print maps
+    print ""
+    --print (map (calcLocations seeds) maps)
     hClose handle -- Remember to close files when done
 
 -- Returns list of keys as Ints
@@ -27,21 +28,23 @@ getSeeds :: String -> [Int]
 getSeeds rawSeeds = map (fromMaybe (-1) . readMaybe) (words (drop 7 rawSeeds))
 
 
--- Generates ordered list of int lists. Mappings are seperated by empty lists.
-extractMapping :: [Int] -> [String] -> [[Int]]
+-- Generates ordered list of lisst of int lists: 
+--  Outer list reps all mappings; 
+--  First order list reps specific maps (ie seed-to-soil); 
+--  Second order list reps specific map.
+extractMapping :: [[Int]] -> [String] -> [[[Int]]]
 extractMapping mapAcc rawMapping = case rawMapping of 
     m:ms -> if m /= "" && isNumber (head m)
-        then map (fromMaybe (-1) . readMaybe) (words (head rawMapping)):extractMapping mapAcc ms
-        else if m == "" then mapAcc:extractMapping mapAcc ms
+        then extractMapping (mapAcc ++ [map (fromMaybe (-1) . readMaybe) (words m)]) ms
+        else if m == "" && not (null mapAcc) then mapAcc:extractMapping [] ms
+        else if m == "" then extractMapping [] ms
         else extractMapping mapAcc ms
     [] -> []
 
-orgMapping :: [[Int]] -> [[Int]] -> [[[Int]]]
-orgMapping mapAcc maps = case maps of
-    [] -> []
-    m:ms -> if m == []
-        then mapAcc:orgMapping [] ms
-        else orgMapping (m:mapAcc) ms
+calcLocations :: [Int] -> [[[Int]]] -> [Int]
+calcLocations seeds mapsOfMaps = case mapsOfMaps of
+    [] -> seeds
+    m:ms -> calcLocations (calcMap seeds m) ms
 
 calcMap :: [Int] -> [[Int]] -> [Int]
 calcMap seeds maps = case (seeds, maps) of 
@@ -53,8 +56,3 @@ calcMap seeds maps = case (seeds, maps) of
     (s:ss, m:ms) -> case elemIndex s (take (m !! 2) [(m !! 1)..]) of
         Nothing -> calcMap (s:ss) ms ++ calcMap ss ms
         Just x -> (take (m !! 2) [(m !! 1)..]!! x) : calcMap ss ms 
-
-calcLocations :: [Int] -> [[[Int]]] -> [Int]
-calcLocations seeds mapsOfMaps = case mapsOfMaps of
-    [] -> seeds
-    m:ms -> calcLocations (calcMap seeds m) ms
