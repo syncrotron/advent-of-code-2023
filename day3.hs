@@ -6,7 +6,6 @@ import Data.List
 import Text.Read ( readMaybe, Lexeme (String) )
 import Data.Maybe
 import Data.Char
-import Data.ByteString.Char8 (splitWith)
 
 -- Start Part 1 --
 {-

@@ -3,10 +3,8 @@
 import System.Environment
 import System.IO 
 import Data.List 
-import Text.Read ( readMaybe, Lexeme (String) )
 import Data.Maybe
 import Data.Char
-import Data.ByteString.Char8 (splitWith)
 
 -- Start Part 1 --
 -- Wrong: 18809
@@ -18,8 +16,7 @@ main = do
     handle <- openFile (head args) ReadMode -- Neet way to open filenames passed in as args
     contents <- hGetContents handle 
     let fileLines = lines contents
-    let listOfParts = fileLines 
-    print (sum (map (findCardValue 0 . splitKeysCards "") listOfParts))
+    print (sum (map (findCardValue 0 . splitKeysCards "") fileLines))
     hClose handle -- Remember to close files when done
 -}
 -- Returns list of sorted int tuples, with the following structure (keys, cards)
