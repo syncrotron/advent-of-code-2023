@@ -10,17 +10,16 @@ import Data.List (sort)
 
 -- Start Part 1 --
 -- Correct: 282277027
-main = do
-    args <- getArgs
-    handle <- openFile (head args) ReadMode
-    contents <- hGetContents handle
-    let fileLines = lines contents
-    -- All "lets" done for readability. Could be condensed into final call in brackets
-    let maps = extractMapping [] (tail fileLines) 
-    let seeds = getSeeds (head fileLines)
-    print (minimum (calcLocations seeds maps))
-    
-    hClose handle -- Remember to close files when done
+-- main = do
+--     args <- getArgs
+--     handle <- openFile (head args) ReadMode
+--     contents <- hGetContents handle
+--     let fileLines = lines contents
+--     -- All "lets" done for readability. Could be condensed into final call in brackets
+--     let maps = extractMapping [] (tail fileLines) 
+--     let seeds = getSeeds (head fileLines)
+--     print (minimum (calcLocations seeds maps))
+--     hClose handle -- Remember to close files when done
 
 -- Returns list of keys as Ints
 -- value (-1) is considered an error in reading string -> int
@@ -61,3 +60,28 @@ calcMap maps seed = case maps of
     [] -> seed
 
 -- End Part 1 --
+
+-- Start Part 2 --
+main = do
+    args <- getArgs
+    handle <- openFile (head args) ReadMode
+    contents <- hGetContents handle
+    let fileLines = lines contents
+    -- All "lets" done for readability. Could be condensed into final call in brackets
+    let maps = extractMapping [] (tail fileLines) 
+    let seeds = expandSeedsToRanges (getSeeds (head fileLines))
+    print (seeds)
+    hClose handle -- Remember to close files when done
+
+getSeedRanges :: Int -> Int -> (Int, Int)
+getSeedRanges seed range = (seed, seed+range)
+
+expandSeedsToRanges :: [Int] -> [(Int, Int)]
+expandSeedsToRanges seeds = case seeds of
+    [] -> []
+    s:(s':ss) -> (getSeedRanges s s'): expandSeedsToRanges ss
+
+-- Takes unordered, uncondensed list of ranges
+-- Returns a list of ordered, ranges of condenses seeds (condenses overlapping seed ranges)
+condenseRanges :: [(Int, Int)] -> [(Int, Int)]
+condenseRanges seedRanges = []
