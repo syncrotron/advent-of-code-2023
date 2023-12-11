@@ -13,6 +13,7 @@ import Data.Function (on)
 
 
 -- Start Part 1 --
+-- Wrong: 244282690, ^
 -- Correct: 
 
 main = do
@@ -23,7 +24,8 @@ main = do
     let fileLines = lines contents
     let sortedHands = sortBy (handCompare) (fileLines) --Supposedly, sortBy is O(n log(n))
     let sortedScores = map (drop 6) sortedHands
-    print sortedHands
+    print ((multiplyByIndex 1 (map (read :: String -> Int) sortedScores)))
+
     print (sum (multiplyByIndex 1 (map (read :: String -> Int) sortedScores)))
     hClose handle -- Remember to close files when done
 
@@ -93,19 +95,21 @@ fourOfKind cards = case (sort cards) of
 
 fullHouse :: String -> Bool
 fullHouse cards = case (sort cards) of
-    [a,b,c,d,e] -> (a == b) && (c == e) ||
-                   (a == c) && (d == e) 
+    [a,b,c,d,e] -> ((a == b) && (b == c) && (d == e)) ||
+                   ((a == b) && (c == d) && (d == e))
+
 
 threeOfKind :: String -> Bool
 threeOfKind cards = case (sort cards) of
-    [a,b,c,d,e] -> (a == b) && (b == c) ||
-                   (c == d) && (d == e)
+    [a,b,c,d,e] -> ((a == b) && (b == c)) ||
+                   ((b == c) && (c == d)) ||
+                   ((c == d) && (d == e))
 
 twoPair :: String -> Bool
 twoPair cards = case (sort cards) of
-    [a,b,c,d,e] -> (a == b) && (c == d) || 
-                   (a == b) && (d == e) ||
-                   (b == c) && (d == e) 
+    [a,b,c,d,e] -> ((a == b) && (c == d)) || 
+                   ((a == b) && (d == e)) ||
+                   ((b == c) && (d == e))
 
 onePair :: String -> Bool
 onePair cards = case (sort cards) of
@@ -117,7 +121,7 @@ onePair cards = case (sort cards) of
 -- Would be redundant in 
 highCard :: String -> Bool
 highCard cards =  case (sort cards) of
-    [a,b,c,d,e] -> (a /= b) || 
-                   (b /= c) || 
-                   (c /= d) || 
+    [a,b,c,d,e] -> (a /= b) && 
+                   (b /= c) && 
+                   (c /= d) && 
                    (d /= e)
