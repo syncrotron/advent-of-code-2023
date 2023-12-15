@@ -94,21 +94,24 @@ main = do
     args <- getArgs
     handle <- openFile (head args) ReadMode -- Neet way to open filenames passed in as args
     contents <- hGetContents handle 
-    let test1 = "......755."
+    let test0 = "......#..."
+    let test1 = "*.....755."
     let test2 = "...$.*...."
     let test3 = ".664.598.."
     let fileLines = lines contents
-    let listOfParts = linesToTriples2 fileLines
-    print (listOfParts)
+    let listOfParts = linesToTriples2 [test0, test1, test2, test3]
+    print (findGears (0,0) listOfParts)
     hClose handle -- Remember to close files when done
 
 -- Verified
+-- Takes in list of input strings, generates list of lists of line triples
+-- where [(x, y, z)] is x = current row, y is x + 1 line chars, z is x + 2 line chars.
 linesToTriples2 :: [String] -> [[(Char, Char, Char)]]
 linesToTriples2 lines = case lines of 
     [] -> []
-    [y] -> zipTriple (y, replicate (length y) '.', replicate (length y) '.') : linesToTriples2 [] -- Handles bottom row of string
-    (y:z:z':ys) -> zipTriple (y, z, z') : linesToTriples2 (z':ys)
-    (y:z:ys) -> zipTriple (y, z, replicate (length y) '.') : linesToTriples2 (z:ys) -- Handles second bottom row of string
+    [x] -> zipTriple (x, replicate (length x) '.', replicate (length x) '.') : linesToTriples2 [] -- Handles bottom row of string
+    (x:y:z:zs) -> zipTriple (x, y, z) : linesToTriples2 (y:z:zs)
+    (x:y:ys) -> zipTriple (x, y, replicate (length x) '.') : linesToTriples2 (y:ys) -- Handles second bottom row of string
 
 -- findPartNums2 :: [[(Char, Char, Char)]] -> [(String, String)]
 -- findPartNums2 tripLines = case tripLines of
@@ -129,22 +132,16 @@ linesToTriples2 lines = case lines of
 --         (getSym ('.', y, z) ++ strAcc, "") : findPartNumsHelper2 (getSym ('.', y, z)) ls
 --     else strAcc : findPartNumsHelper "" ls
 
-isGear :: Char -> Bool
-isGear x = x == '*'
-
--- The idea is to position the gear in the y position of (y, z, z'), then search for numbers recursively
+-- The idea is to position the gear in the y position of (x, y, z), then search for numbers recursively
 -- in all directions. That is why I pass in origCol and do all the funky index stuff, as I am trying to
 -- Allow crawls through the original matrix in all directions (except above y, as we assume we read all numbers top left down)
-travelThroughGear :: String -> [(Char, Char, Char)] -> [(Char, Char, Char)] -> String
-travelThroughGear strAcc origCol curCol = case curCol of
-    [] -> []
-    -- All "isGear" if statements are trying to get a gear in the y position before searching for numbers
-    (y, z, z'):ls -> if isGear y 
-        -- Try to recursivley look for number
-        then travelThroughGear strAcc origCol (drop (length origCol - length ls - 1) origCol) 
-        ++ travelThroughGear strAcc origCol (drop (length origCol - length ls + 1) origCol)
-        else if isGear z then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls)) origCol))
-        else if isGear z' then travelThroughGear strAcc origCol (tail (drop (length ((y, z, z'):ls) + 1) origCol)) 
-        else []
+findGears :: (Int, Int) -> [[(Char, Char, Char)]] -> (Int, Int)
+findGears gearIndex matrix = case matrix of
+    [] -> gearIndex
+    _ -> case (head matrix) of
+        ('*', y, z):ls -> findGears (fst gearIndex, snd gearIndex + 1) ((tail matrix)) -- Gear is not in y, move down line 
+        (x, '*', z):ls -> gearIndex
+        _:ls -> findGears (fst gearIndex + 1, snd gearIndex ) (ls:(tail matrix))
+        [] -> gearIndex
 
 -- End Part 2 --
