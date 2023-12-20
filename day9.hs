@@ -12,15 +12,15 @@ import Debug.Trace
 -- Wrong: , ↑↓
 -- Correct: 1725987467
 
-main = do
-    args <- getArgs
-    handle <- openFile (head args) ReadMode
-    contents <- hGetContents handle
-    -- All "lets" done for readability. Could be condensed into final call in brackets
-    let fileLines = lines contents -- O(n)
-    let fileNums = map (map (read :: String -> Int) . words) fileLines
-    print (sum (map (pyramidGenerator . (:[])) fileNums)) 
-    hClose handle -- Remember to close files when done
+-- main = do
+--     args <- getArgs
+--     handle <- openFile (head args) ReadMode
+--     contents <- hGetContents handle
+--     -- All "lets" done for readability. Could be condensed into final call in brackets
+--     let fileLines = lines contents -- O(n)
+--     let fileNums = map (map (read :: String -> Int) . words) fileLines
+--     print (sum (map (pyramidGenerator . (:[])) fileNums)) 
+--     hClose handle -- Remember to close files when done
 
 pyramidGenerator :: [[Int]] -> Int
 pyramidGenerator lists = if all (==0) (last lists) 
@@ -37,3 +37,19 @@ extrapolator seed lists = case lists of
     x:xs -> extrapolator (seed + (last x)) xs
 
 -- End Part 1 --
+
+-- Start Part 2 --
+-- Wrong: , ↑↓
+-- Correct: 971
+
+main = do
+    args <- getArgs
+    handle <- openFile (head args) ReadMode
+    contents <- hGetContents handle
+    -- All "lets" done for readability. Could be condensed into final call in brackets
+    let fileLines = lines contents -- O(n)
+    let fileNums = map (reverse . map (read :: String -> Int) . words) fileLines -- Reverse lists to go opposite direction
+    print (sum (map (pyramidGenerator . (:[])) fileNums)) 
+    hClose handle -- Remember to close files when done
+
+-- End Part 2 --
